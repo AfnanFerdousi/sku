@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0px;
+            padding: 8px;
+        }
+
+        #orderDetails {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 20px;
+            column-gap: 20px;
+        }
+
+        #productsInfo {
+            flex: 1;
+        }
+
+        #productForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #productForm label {
+            font-weight: bold;
+        }
+
+        #shipInfo {
+            flex: 1;
+        }
+
+        #shipInfo h3 {
+            margin-bottom: 5px;
+        }
+
+        #shipInfo span {
+            font-weight: normal;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 style="font-size: 30px; text-align: start; font-weight: 700;">Single Order Information</h2>
+    <div id="orderDetails">
+        <div id="productsInfo">
+            <h3>Products Information</h3>
+            <form action="" id="productForm"></form>
+        </div>
+        <div id="shipInfo">
+            <h3>Shipping Information</h3>
+            <h3>Name: <span id="name"></span></h3>
+            <h3>Email: <span id="email"></span></h3>
+            <h3>Address: <span id="address"></span></h3>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript code to retrieve URL parameters and fetch single order's data
+        const token = "SKULabsToken eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IlJTQV9BUEkiLCJqa3UiOiJodHRwczovL2FwcC5za3VsYWJzLmNvbS9zL2FwaS9vYXV0aC9qd2tzIn0.eyJpc3MiOiJodHRwczovL2FwcC5za3VsYWJzLmNvbS9zL2FwaS9vYXV0aCIsInN1YiI6IjY1YjdjM2IxNThlZTY1ZDI5YzcyMzAzNiIsImFjY291bnRfaWQiOiI1ZjZjZjI4MzFjOWQ0NDRhYTM5MzMzOGEiLCJzZWVkIjoxNjQxMzkxMzYwLCJhdWQiOiJodHRwczovL2FwcC5za3VsYWJzLmNvbS9zL2FwaS9vYXV0aCIsInNjb3BlcyI6WyJwcm9maWxlIiwiZW1haWwiLCJwaG9uZSIsInBsYXRmb3JtT3BlbiIsInBsYXRmb3JtR2VuZXJpYyIsInBsYXRmb3JtQXBpIiwidXNlclN0YW5kYXJkIiwidXNlck1hbmFnZXIiLCJ1c2VyQWRtaW4iLCJldmVyeW9uZSJdLCJhdXRoX3RpbWUiOjE3MDcxNTE5NTAsImlhdCI6MTcwNzE1MTk1MCwianRpIjoiNjVjMTEyNGVmOTA1YTIxZDY1YWFiNGFlIn0.NyKMPsdtKcXp9ZPhMxKfcMKuvMRL6nibQr9NtYgtELiUkorGa5g79zNNFRjyUVNI4zTmtgRRy9Ka1sMsks1O46G2NYJN04BEzGPniSV6-82ksjGMwzpomDdjNxvxI7PvXqiFg8P_iTFTIUtTw1pIkLM0PzvVEaAO8R_Gz7LMAda1m9qNAsge-JgKTdnrYptMIaOGTPXztJE8kOGBmc1uYMkPvCBTKia72OYQ-W6JXzwP4bhkbKkO-it-U-FbjfT3BNlBbgpX_akow4_4F3sVgs6K7Dy01yGpV8bsyPsXgqEqtv-sDVUu54Bq1-r87mvOSWSqd7cJVKyiC5nQaCnadQ";
+        function fetchSingleOrder() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const storeId = urlParams.get('store_id');
+            const orderNumber = urlParams.get('order_number');
+
+            const url = `https://api.skulabs.com/order/get_single?store_id=${storeId}&order_number=${orderNumber}`;
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    Authorization: token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const productsInfo = data.order.stash.items;
+
+                    const form = document.getElementById('productForm');
+
+                    productsInfo.forEach(product => {
+                        form.innerHTML = `
+                            <label for="productName">Product Name:</label>
+                            <input type="text" id="productName" value="${product.lineName}" readonly>
+                            <label for="productPrice">Price:</label>
+                            <input type="text" id="productPrice" value="${product.price}" readonly>
+                            <label for="productQuantity">Quantity:</label>
+                            <input type="text" id="productQuantity" value="${product.quantity}" readonly>
+                        `;
+                    });
+
+                    document.getElementById('name').textContent = data.order.stash.shipping_information.name;
+                    document.getElementById('email').textContent = data.order.stash.shipping_information.email;
+                    document.getElementById('address').textContent = data.order.stash.shipping_information.address;
+                })
+                .catch(error => console.error('Error fetching single order:', error));
+        }
+
+        // Call fetchSingleOrder when the page loads
+        fetchSingleOrder();
+    </script>
+</body>
+
+</html>

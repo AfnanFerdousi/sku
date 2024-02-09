@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      font-size: 12px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+  </style>
+  <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js">
+  </script>
+
+</head>
+
+<body>
+  <h2 style="font-size: 30px; text-align: start; font-weight: 700;">All Order Information</h2>
+
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th>Order Id</th>
+          <th>Shpping date</th>
+          <th>Shipping address</th>
+          <th>Customer name</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="ordersTableBody">
+
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year}`;
+    }
+    const token = "SKULabsToken eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IlJTQV9BUEkiLCJqa3UiOiJodHRwczovL2FwcC5za3VsYWJzLmNvbS9zL2FwaS9vYXV0aC9qd2tzIn0.eyJpc3MiOiJodHRwczovL2FwcC5za3VsYWJzLmNvbS9zL2FwaS9vYXV0aCIsInN1YiI6IjY1YjdjM2IxNThlZTY1ZDI5YzcyMzAzNiIsImFjY291bnRfaWQiOiI1ZjZjZjI4MzFjOWQ0NDRhYTM5MzMzOGEiLCJzZWVkIjoxNjQxMzkxMzYwLCJhdWQiOiJodHRwczovL2FwcC5za3VsYWJzLmNvbS9zL2FwaS9vYXV0aCIsInNjb3BlcyI6WyJwcm9maWxlIiwiZW1haWwiLCJwaG9uZSIsInBsYXRmb3JtT3BlbiIsInBsYXRmb3JtR2VuZXJpYyIsInBsYXRmb3JtQXBpIiwidXNlclN0YW5kYXJkIiwidXNlck1hbmFnZXIiLCJ1c2VyQWRtaW4iLCJldmVyeW9uZSJdLCJhdXRoX3RpbWUiOjE3MDcxNTE5NTAsImlhdCI6MTcwNzE1MTk1MCwianRpIjoiNjVjMTEyNGVmOTA1YTIxZDY1YWFiNGFlIn0.NyKMPsdtKcXp9ZPhMxKfcMKuvMRL6nibQr9NtYgtELiUkorGa5g79zNNFRjyUVNI4zTmtgRRy9Ka1sMsks1O46G2NYJN04BEzGPniSV6-82ksjGMwzpomDdjNxvxI7PvXqiFg8P_iTFTIUtTw1pIkLM0PzvVEaAO8R_Gz7LMAda1m9qNAsge-JgKTdnrYptMIaOGTPXztJE8kOGBmc1uYMkPvCBTKia72OYQ-W6JXzwP4bhkbKkO-it-U-FbjfT3BNlBbgpX_akow4_4F3sVgs6K7Dy01yGpV8bsyPsXgqEqtv-sDVUu54Bq1-r87mvOSWSqd7cJVKyiC5nQaCnadQ";
+    const options = {
+      method: 'GET',
+      qs: {
+        "start": "UTC Date Format",
+        "end": "UTC Date Format",
+      },
+      headers: {
+        Authorization: token
+      }
+    };
+
+    const url = 'https://api.skulabs.com/order/get_all'; // Replace 'your_api_endpoint_here' with your actual API endpoint
+
+    fetch(url, options)
+      .then(res => res.json())
+      .then(data => {
+        // console.log(data);
+        const tbody = document.getElementById('ordersTableBody');
+        data.orders.forEach(order => {
+          // console.log(order)
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${order.order_number}</td>
+            <td>${formatDate(order.stash.ship_by_date)}</td>
+            <td>${order.stash.shipping_information.address}</td>
+            <td>${order.stash.shipping_information.name}</td>
+            <td>${order.stash.shipping_information.phone}</td>
+            <td>${order.stash.shipping_information.email}</td>
+            <td>$${order.stash.total}</td>
+            <td>${order.channel_status}</td>
+            <td><button class="viewOrderLink" data-store-id="${order.store_id}" data-order-number="${order.order_number}">View Order</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        // Add event listeners to "View Order" buttons
+        document.querySelectorAll('.viewOrderLink').forEach(link => {
+          link.addEventListener('click', function (event) {
+            event.preventDefault();
+            const storeId = link.getAttribute('data-store-id');
+            const orderNumber = link.getAttribute('data-order-number');
+            // Navigate to the single_order.html page, passing store_id and order_number as URL parameters
+            window.location.href = `singleOrder.html?store_id=${storeId}&order_number=${orderNumber}`;
+          });
+        });
+      })
+      .catch(err => console.error('error:' + err));
+
+  </script>
+</body>
+
+</html>
